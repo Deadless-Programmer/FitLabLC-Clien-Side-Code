@@ -49,7 +49,16 @@ async function run() {
         res.send(result);
     })
   
-
+    app.get('/popularInstructors', async(req, res)=>{
+        const query = {};
+        const options = {
+            // sort matched documents in descending order by rating
+            sort: { "studentsInClass": -1 },
+            
+          };
+        const result = await instructorsCollection.find(query,options ).toArray();
+        res.send(result);
+    })
 
 
 
