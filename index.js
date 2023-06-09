@@ -56,7 +56,7 @@ async function run() {
             sort: { "studentsInClass": -1 },
             
           };
-        const result = await instructorsCollection.find(query,options ).toArray();
+        const result = await instructorsCollection.find(query,options ).limit(6).toArray();
         res.send(result);
     })
 
