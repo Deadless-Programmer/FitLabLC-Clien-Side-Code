@@ -28,11 +28,23 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const classCollection = client.db("fitLabDB").collection("class");
+    const instructorsCollection = client.db("fitLabDB").collection("instructors");
 
     app.get('/class', async(req, res)=>{
         const result = await classCollection.find().toArray();
         res.send(result);
     })
+    app.get('/popularClass', async(req, res)=>{
+        const query = {};
+        const options = {
+            // sort matched documents in descending order by rating
+            sort: { "studentsEnrolled": -1 },
+            
+          };
+        const result = await classCollection.find(query, options).limit(6).toArray();
+        res.send(result);
+    })
+ 
 
 
 
