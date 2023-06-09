@@ -44,7 +44,11 @@ async function run() {
         const result = await classCollection.find(query, options).limit(6).toArray();
         res.send(result);
     })
- 
+    app.get('/instructors', async(req, res)=>{
+        const result = await instructorsCollection.find().toArray();
+        res.send(result);
+    })
+  
 
 
 
