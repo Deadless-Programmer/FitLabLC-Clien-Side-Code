@@ -27,9 +27,24 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const userCollection = client.db("fitLabDB").collection("user");
     const classCollection = client.db("fitLabDB").collection("class");
     const instructorsCollection = client.db("fitLabDB").collection("instructors");
     const classCartCollection = client.db("fitLabDB").collection("classCart");
+
+
+    app.post('/user', async(req, res)=>{
+      const user = req.body;
+      const query = { email: user.email }
+      const existingUser = await userCollection.findOne(query);
+      console.log( "existing user", existingUser);
+      if (existingUser) {
+        return res.send({ message: 'user already exists' })
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+
 
     app.get('/class', async(req, res)=>{
         const result = await classCollection.find().toArray();
