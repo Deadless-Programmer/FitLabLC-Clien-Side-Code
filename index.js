@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
     const classCollection = client.db("fitLabDB").collection("class");
     const instructorsCollection = client.db("fitLabDB").collection("instructors");
+    const classCartCollection = client.db("fitLabDB").collection("classCart");
 
     app.get('/class', async(req, res)=>{
         const result = await classCollection.find().toArray();
@@ -58,6 +59,13 @@ async function run() {
           };
         const result = await instructorsCollection.find(query,options ).limit(6).toArray();
         res.send(result);
+    })
+
+    app.post('/classCart', async (req, res)=>{
+      const item =req.body;
+      console.log(item);
+      const result = await classCartCollection.insertOne(item);
+      res.send(result);
     })
 
 
