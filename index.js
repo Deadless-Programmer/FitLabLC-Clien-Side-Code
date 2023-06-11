@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 
@@ -33,6 +34,13 @@ async function run() {
     const classCartCollection = client.db("fitLabDB").collection("classCart");
 
 
+    app.post('/jwt', (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+
+      res.send({ token })
+    })
+
 
     app.get('/user', async(req, res)=>{
       const result = await userCollection.find().toArray();
@@ -51,7 +59,7 @@ async function run() {
     })
     app.patch('/user/admin/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
