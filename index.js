@@ -21,7 +21,7 @@ const verifyJWT = (req, res, next) => {
   const token = authorization.split(' ')[1];
 
   jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-    console.log(err, decoded)
+    // console.log(err, decoded)
     if (err) {
       return res.status(401).send({ error: true, message: 'unauthorized access' })
     }
@@ -60,7 +60,26 @@ async function run() {
     })
 
 
-    app.get('/user', async(req, res)=>{
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await userCollection.findOne(query);
+      if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden message' });
+      }
+      next();
+    }
+    // const verifyInstructor = async (req, res, next) => {
+    //   const email = req.decoded.email;
+    //   const query = { email: email }
+    //   const user = await userCollection.findOne(query);
+    //   if (user?.role !== 'instructor') {
+    //     return res.status(403).send({ error: true, message: 'forbidden message' });
+    //   }
+    //   next();
+    // }
+
+    app.get('/user', verifyJWT, verifyAdmin,   async(req, res)=>{
       const result = await userCollection.find().toArray();
       res.send(result);
     })
@@ -68,7 +87,7 @@ async function run() {
       const user = req.body;
       const query = { email: user.email }
       const existingUser = await userCollection.findOne(query);
-      console.log( "existing user", existingUser);
+      // console.log( "existing user", existingUser);
       if (existingUser) {
         return res.send({ message: 'user already exists' })
       }
@@ -96,6 +115,33 @@ async function run() {
       const updateDoc = {
         $set: {
           role: 'admin'
+        },
+      };
+
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
+    app.get('/user/instructor/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+        console.log(email)
+      if (req.decoded.email !== email) {
+        res.send({ instructor: false })
+      }
+
+      const query = { email: email }
+      const user = await userCollection.findOne(query);
+      const result = { instructor: user?.role === 'instructor' }
+      res.send(result);
+    })
+
+    app.patch('/user/instructor/:id', async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: 'instructor'
         },
       };
 
@@ -155,7 +201,7 @@ async function run() {
 
     app.post('/classCart', async (req, res)=>{
       const item =req.body;
-      console.log(item);
+      // console.log(item);
       const result = await classCartCollection.insertOne(item);
       res.send(result);
     })
