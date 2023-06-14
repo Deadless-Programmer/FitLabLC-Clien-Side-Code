@@ -50,6 +50,7 @@ async function run() {
     const classCollection = client.db("fitLabDB").collection("class");
     const instructorsCollection = client.db("fitLabDB").collection("instructors");
     const classCartCollection = client.db("fitLabDB").collection("classCart");
+    const addClassCollection = client.db("fitLabDB").collection("addClass");
 
 
     app.post('/jwt', (req, res) => {
@@ -152,7 +153,17 @@ async function run() {
     app.post("/class", async (req, res) => {
       const classbooking = req.body;
       // console.log(toysbooking);
-      const result = await classCollection.insertOne(classbooking);
+      const result = await addClassCollection.insertOne(classbooking);
+      res.send(result);
+    });
+
+    app.get("/signgleClassByEmail", async (req, res) => {
+      console.log(req.query.email);
+      let query = {};
+      if (req.query?.email) {
+        query = { instructorEmail: req.query.email };
+      }
+      const result = await addClassCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -160,6 +171,17 @@ async function run() {
         const result = await classCollection.find().toArray();
         res.send(result);
     })
+    app.get('/manage', async(req, res)=>{
+        const result = await addClassCollection.find().toArray();
+        res.send(result);
+    })
+
+    app.get('/manage/:id' , async(req,res)=>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await addClassCollection.findOne(query);
+      res.send(result);
+    });
     app.get('/popularClass', async(req, res)=>{
         const query = {};
         const options = {
@@ -210,6 +232,57 @@ async function run() {
       const result = await classCartCollection.insertOne(item);
       res.send(result);
     })
+
+app.patch('/classCart/approved/:id' , async(req,res)=>{
+    const classId = req.params.id;
+    // const classCart = req.body.classCart;
+    const filter = {_id : new ObjectId(classId)};
+    const updateStatus = {
+      $set :{
+        status: 'approved'
+      }
+    }
+
+    const result = await addClassCollection.updateOne(filter,updateStatus)
+    // const result = await classCartCollection.insertOne(addClass);
+    res.send(result);
+  });
+
+  app.patch('/classCart/feedback/:id' , async(req,res)=>{
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const sendFeedback = {
+      $set: {
+        feedback: req.body.feedback,
+      },
+    };
+    const result = await addClassCollection.updateOne(query,sendFeedback);
+    res.send(result);
+  })
+
+
+
+app.patch('/classCart/denied/:id' , async(req,res)=>{
+    const classId = req.params.id;
+    // const classCart = req.body.classCart;
+    const filter = {_id : new ObjectId(classId)};
+    const updateStatus = {
+      $set :{
+        status: 'denied'
+      }
+    }
+
+    const result = await addClassCollection.updateOne(filter,updateStatus)
+    // const result = await classCartCollection.insertOne(addClass);
+    res.send(result);
+  });
+
+
+
+
+
+
+
 
     app.delete('/classCart/:id', async (req, res) => {
       const id = req.params.id;
